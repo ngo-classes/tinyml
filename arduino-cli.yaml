@@ -1,0 +1,32 @@
+# Repo-local Arduino CLI configuration for the TinyML course.
+# Activation scripts export absolute ARDUINO_* variables so the paths below
+# are mostly a readable fallback and a good default for local use.
+
+directories:
+  data: ./.arduino-data
+  downloads: ./.arduino-downloads
+  user: ./.arduino-user
+
+build_cache:
+  path: ./.arduino-build-cache
+  compilations_before_purge: 0
+  ttl: 720h
+
+library:
+  enable_unsafe_install: false
+
+board_manager:
+  additional_urls: []
+  enable_unsafe_install: false
+
+metrics:
+  enabled: false
+
+updater:
+  enable_notification: false
+
+output:
+  no_color: false
+
+sketch:
+  always_export_binaries: true

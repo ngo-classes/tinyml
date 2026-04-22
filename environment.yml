@@ -1,0 +1,24 @@
+name: tinyml-course
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - jupyterlab
+  - notebook
+  - ipykernel
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - pyserial
+  - pyyaml
+  - click
+  - pillow
+  - scikit-learn
+  - pip:
+      # TensorFlow is installed via pip inside the conda environment.
+      - tensorflow
+      - tensorflow-datasets
+      - opencv-python
+      - pooch

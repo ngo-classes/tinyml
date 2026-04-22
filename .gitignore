@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment files
+.env
+.venv/
+venv/
+
+# OS/editor clutter
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build/output artifacts
+build/
+dist/
+*.log
+*.tmp
+
+# Course-local Arduino state is kept in the repo for convenience,
+# but contents are ignored by the nested .gitignore files.
