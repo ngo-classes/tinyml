@@ -75,6 +75,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 #### macOS / Linux / Git Bash
 
 ```bash
+chmod u+x scripts/check-setup.sh
 scripts/check-setup.sh
 ```
 
@@ -87,6 +88,7 @@ scripts/check-setup.sh
 ### 5. Setup core libraries
 
 ```bash
+chmod u+x scripts/bootstrap-arduino.sh
 scripts/bootstrap-arduino.sh
 ```
 

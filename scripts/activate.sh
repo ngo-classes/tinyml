@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Detect the current script path in bash or zsh
+if [ -n "${BASH_VERSION:-}" ]; then
+  _SCRIPT_PATH="${BASH_SOURCE[0]}"
+elif [ -n "${ZSH_VERSION:-}" ]; then
+  _SCRIPT_PATH="${(%):-%x}"
+else
+  echo "Unsupported shell. Please use bash or zsh."
+  return 1 2>/dev/null || exit 1
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "$_SCRIPT_PATH")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TOOLS_DIR="$REPO_ROOT/tools/arduino-cli"
-
-mkdir -p \
-  "$REPO_ROOT/.arduino-data" \
-  "$REPO_ROOT/.arduino-downloads" \
-  "$REPO_ROOT/.arduino-user" \
-  "$REPO_ROOT/.arduino-build-cache"
 
 export ARDUINO_CONFIG_FILE="$REPO_ROOT/arduino-cli.yaml"
 export ARDUINO_DIRECTORIES_DATA="$REPO_ROOT/.arduino-data"
