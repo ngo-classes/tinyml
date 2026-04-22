@@ -1,4 +1,4 @@
-name: tinyml-course
+name: tinyml
 channels:
   - conda-forge
 dependencies:

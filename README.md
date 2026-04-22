@@ -42,7 +42,7 @@ This repository provides a single cross-platform layout for a TinyML course usin
 
 ```bash
 conda env create -f environment.yml
-conda activate tinyml-course
+conda activate tinyml
 ```
 
 ### 2. Put the Arduino CLI binary in `tools/arduino-cli/`
@@ -65,8 +65,10 @@ source scripts/activate.sh
 #### Windows PowerShell
 
 ```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\scripts\activate.ps1
 ```
+
 
 ### 4. Verify setup
 
@@ -82,6 +84,19 @@ scripts/check-setup.sh
 .\scripts\check-setup.ps1
 ```
 
+### 5. Setup core libraries
+
+```bash
+scripts/bootstrap-arduino.sh
+```
+
+#### Windows PowerShell
+
+```powershell
+.\scripts\bootstrap-arduino.ps1
+```
+
+
 ---
 
 ## What the activation scripts do
@@ -93,6 +108,7 @@ The activation scripts:
 3. force Arduino CLI's `data`, `downloads`, `user`, and `build_cache` directories to stay local to the repo
 
 This means users can clone the repo, activate the environment, and work without contaminating a machine-wide Arduino setup.
+
 
 ---
 
