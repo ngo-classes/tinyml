@@ -37,6 +37,7 @@ $Core = 'arduino:mbed_nano'
 $Libraries = @(
     'ArduinoBLE',
     'Arduino_LSM9DS1',
+    'Arduino_BMI270_BMM150',
     'Harvard_TinyMLx'
 )
 
