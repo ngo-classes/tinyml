@@ -17,6 +17,8 @@ dependencies:
   - click
   - pillow
   - scikit-learn
+  - scikit-image
+  - seaborn
   - pip:
       # TensorFlow is installed via pip inside the conda environment.
       - tensorflow
