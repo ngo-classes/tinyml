@@ -25,3 +25,4 @@ dependencies:
       - opencv-python
       - pooch
       - bleak
+      - ai-edge-litert
