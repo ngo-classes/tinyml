@@ -17,7 +17,7 @@ def handle_notification(sender, data):
 
     # APDS9960 outputs a single unsigned byte (0-255)
     proximity_value = data[0]
-    print(f"Nano Proximity: {proximity_value}")
+    #print(f"Nano Proximity: {proximity_value}")
 
     # If an object gets too close (< 100), issue an instruction packet
     if proximity_value < 100:

@@ -1,0 +1,118 @@
+#VRML_SIM R2025a utf8
+
+# A small mobile-ready Robot PROTO that visually mirrors an Arduino Nano 33 BLE
+# (~45 x 18 x 6 mm green PCB) carrying an APDS9960 proximity sensor mounted on
+# the front edge, plus an RGB LED indicator in the same position as the Nano's
+# on-board RGB LED. By default the PROTO is declared with `supervisor TRUE` so
+# the attached controller can manipulate the world (e.g. spawn obstacles in
+# front of the rig in response to live proximity readings).
+#
+# Local frame convention (Webots FLU):
+#   +X = front (the APDS9960 looks down +X)
+#   +Y = left
+#   +Z = up
+
+PROTO NanoAPDS9960 [
+  field SFVec3f    translation    0 0 0.01
+  field SFRotation rotation       0 0 1 0
+  field SFString   name           "nano_apds9960"
+  field SFString   controller     "twin_supervisor"
+  field MFString   controllerArgs []
+  field SFBool     supervisor     TRUE
+  field SFColor    pcbColor       0.10 0.45 0.20
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    controllerArgs IS controllerArgs
+    supervisor IS supervisor
+    children [
+      # --- PCB body (Nano 33 BLE form factor: 45 x 18 x 6 mm) ---
+      Pose {
+        translation 0 0 0.003
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS pcbColor
+              roughness 0.85
+              metalness 0.0
+            }
+            geometry Box {
+              size 0.045 0.018 0.006
+            }
+          }
+        ]
+      }
+      # --- APDS9960 sensor package, mounted near the front edge ---
+      Pose {
+        translation 0.020 0 0.0075
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.05 0.05 0.05
+              roughness 0.6
+              metalness 0.1
+            }
+            geometry Box {
+              size 0.004 0.0036 0.0015
+            }
+          }
+        ]
+      }
+      # --- Forward-direction marker (tiny red tab) so orientation is obvious ---
+      Pose {
+        translation 0.0225 0 0.0065
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.9 0.1 0.1
+              roughness 0.4
+              metalness 0.0
+            }
+            geometry Box {
+              size 0.001 0.002 0.001
+            }
+          }
+        ]
+      }
+      # --- On-board RGB LED placeholder (visual only) ---
+      LED {
+        translation -0.015 0 0.0075
+        name "rgb_led"
+        color [
+          1 0 0
+          0 1 0
+          0 0 1
+        ]
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.95 0.95 0.95
+              transparency 0.2
+              roughness 0.2
+              metalness 0.0
+            }
+            geometry Sphere {
+              radius 0.0015
+            }
+          }
+        ]
+      }
+    ]
+    boundingObject Pose {
+      translation 0 0 0.003
+      children [
+        Box {
+          size 0.045 0.018 0.006
+        }
+      ]
+    }
+    physics Physics {
+      density -1
+      mass 0.005
+    }
+  }
+}
