@@ -27,3 +27,6 @@ dependencies:
       - bleak
       - ai-edge-litert
       - tensorflow-model-optimization
+      - pyaudio
+      - python_speech_features
+      - librosa
