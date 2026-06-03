@@ -1,0 +1,114 @@
+#VRML_SIM R2025a utf8
+
+# A small mobile-robot PROTO that carries a stylized Nano 33 BLE Sense (with
+# its APDS9960 face) mounted vertically at the front, looking forward in the
+# robot's local +X direction.
+#
+# The supervisor controller drives the robot KINEMATICALLY by writing into the
+# Robot node's `translation` and `rotation` fields each tick, based on a
+# dead-reckoned pose from the physical Nano's IMU stream.
+#
+# The vertical "chip" at the front is purely cosmetic. Geometry is expressed
+# by directly choosing Box dimensions (no rotation math needed):
+#   thickness 6 mm  along robot +X (the PCB face)
+#   width    18 mm  along robot +Y (left-right)
+#   height   45 mm  along robot +Z (up)
+#
+# Robot-local frame (Webots FLU):
+#   +X = forward  (where the chip's APDS9960 face is pointed)
+#   +Y = left
+#   +Z = up
+
+PROTO MobileNano [
+  field SFVec3f    translation    0 0 0.02
+  field SFRotation rotation       0 0 1 0
+  field SFString   name           "mobile_nano"
+  field SFString   controller     "movement_supervisor"
+  field MFString   controllerArgs []
+  field SFBool     supervisor     TRUE
+  field SFColor    chassisColor   0.20 0.22 0.28
+  field SFColor    pcbColor       0.10 0.45 0.20
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    controllerArgs IS controllerArgs
+    supervisor IS supervisor
+    children [
+      # --- Chassis: small flat plate, 12 x 8 x 2 cm ---
+      Pose {
+        translation 0 0 0.01
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS chassisColor
+              roughness 0.6
+              metalness 0.3
+            }
+            geometry Box {
+              size 0.12 0.08 0.02
+            }
+          }
+        ]
+      }
+      # --- Heading marker: red tab along +X so orientation is obvious ---
+      Pose {
+        translation 0.045 0 0.025
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.90 0.10 0.10
+              roughness 0.5
+              metalness 0.0
+            }
+            geometry Box {
+              size 0.030 0.020 0.005
+            }
+          }
+        ]
+      }
+      # --- Vertical Nano chip at the front (cosmetic) ---
+      # PCB face is the +X face (looks forward); chip stands 45 mm tall.
+      Pose {
+        translation 0.057 0 0.045
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS pcbColor
+              roughness 0.85
+              metalness 0.0
+            }
+            geometry Box {
+              size 0.006 0.018 0.045
+            }
+          }
+        ]
+      }
+      # --- APDS9960 sensor package sitting on the front face of the chip ---
+      Pose {
+        translation 0.061 0 0.045
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.05 0.05 0.05
+              roughness 0.6
+              metalness 0.1
+            }
+            geometry Box {
+              size 0.0015 0.0036 0.004
+            }
+          }
+        ]
+      }
+    ]
+    # No `boundingObject` and no `physics`. This robot is moved KINEMATICALLY
+    # by the supervisor each tick (translation + rotation are written directly),
+    # so we deliberately keep it out of ODE's hands. Mixing supervisor
+    # teleports with active physics on the same Robot node has been observed
+    # to crash Webots R2025a on Windows -- ODE gets contradictory state and
+    # the GUI exits silently on play.
+  }
+}

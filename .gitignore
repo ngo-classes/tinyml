@@ -26,5 +26,8 @@ dist/
 *.log
 *.tmp
 
+# Per-machine sensor calibration produced by --calibrate-drift
+python/programs/webot_movement/controllers/movement_supervisor/drift_calibration.json
+
 # Course-local Arduino state is kept in the repo for convenience,
 # but contents are ignored by the nested .gitignore files.

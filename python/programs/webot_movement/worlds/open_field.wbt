@@ -1,0 +1,27 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "../protos/MobileNano.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation 0.6029794481062448 -0.624369315668772 -0.49656695702875536 4.140780234108694
+  position -0.1309543781677256 0.29485843075579243 4.377211496329579
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  translation 0 0 -0.01
+  rotation 0 0 1 3.14159
+  floorSize 3 3
+}
+DEF NANO MobileNano {
+  controllerArgs [
+    ""
+  ]
+}

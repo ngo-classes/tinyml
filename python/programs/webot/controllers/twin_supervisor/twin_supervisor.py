@@ -2,8 +2,12 @@
 
 Reads the live APDS9960 proximity stream (0..255, where 0 = very close,
 255 = nothing detected) from the physical Arduino Nano 33 BLE over Bluetooth
-LE, scales it to a simulated distance, and spawns / moves a red cylinder
-obstacle in front of the NanoAPDS9960 robot at that distance.
+LE, scales it to a simulated distance, and moves the pre-declared
+`DEF PROX_OBSTACLE` node in `worlds/open_field.wbt` to that point in front
+of the NanoAPDS9960 robot.
+
+When the physical sensor reports "nothing" (reading >= TRIGGER_THRESHOLD) the
+obstacle is parked underground at z = -10 to hide it.
 
 Run with `--mock` (the default in `open_field.wbt`) for a deterministic sweep
 that does not require the physical hardware.
@@ -22,7 +26,7 @@ from ble_proximity import BleProximitySource, MockProximitySource, ProximitySour
 
 # --- Mapping configuration ------------------------------------------------- #
 # APDS9960: 0 (very close) -> 255 (nothing). Anything at/above the threshold
-# means "no obstacle visible to the physical sensor", so we remove the prop.
+# means "no obstacle visible to the physical sensor", so we hide the prop.
 TRIGGER_THRESHOLD = 200
 
 # Scaled distance range in meters between the robot's front face and the
@@ -30,46 +34,15 @@ TRIGGER_THRESHOLD = 200
 MIN_DISTANCE_M = 0.05
 MAX_DISTANCE_M = 1.50
 
-# Obstacle geometry.
+# Must match the DEF name used in `worlds/open_field.wbt`.
 OBSTACLE_DEF = "PROX_OBSTACLE"
+
+# Same height/radius as the cylinder declared in the world file. Used only to
+# compute the obstacle's Z so it sits on the floor.
 OBSTACLE_HEIGHT_M = 0.10
-OBSTACLE_RADIUS_M = 0.03
 
-def _build_obstacle_node(x: float, y: float, z: float) -> str:
-    """Render a VRML `Solid { ... }` string for the proximity obstacle.
-
-    Built with an f-string (where `{{` / `}}` produce literal braces) so we
-    don't have to juggle a separate `.format()` template against VRML's own
-    use of curly braces.
-
-    NOTE on orientation: Webots' `Cylinder` primitive has its axis along the
-    local Y axis. The world is ENU (Z = up), so to stand the cylinder upright
-    we wrap the `Shape` in a `Pose` rotated 90 deg about X (Y -> Z).
-    """
-    return (
-        f"DEF {OBSTACLE_DEF} Solid {{\n"
-        f"  translation {x} {y} {z}\n"
-        f'  name "prox_obstacle"\n'
-        f"  children [\n"
-        f"    Pose {{\n"
-        f"      rotation 1 0 0 1.5707963\n"
-        f"      children [\n"
-        f"        Shape {{\n"
-        f"          appearance PBRAppearance {{\n"
-        f"            baseColor 0.9 0.1 0.1\n"
-        f"            roughness 0.5\n"
-        f"            metalness 0.0\n"
-        f"          }}\n"
-        f"          geometry Cylinder {{\n"
-        f"            height {OBSTACLE_HEIGHT_M}\n"
-        f"            radius {OBSTACLE_RADIUS_M}\n"
-        f"          }}\n"
-        f"        }}\n"
-        f"      ]\n"
-        f"    }}\n"
-        f"  ]\n"
-        f"}}\n"
-    )
+# Where the obstacle lives when "nothing detected". Well below the floor.
+HIDDEN_POSITION = [0.0, 0.0, -10.0]
 
 
 def scale_proximity_to_meters(p: int) -> float:
@@ -104,7 +77,6 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use a synthetic proximity source instead of connecting via BLE.",
     )
-    # Webots may pass its own arguments; ignore anything we don't recognize.
     args, _unknown = parser.parse_known_args()
     return args
 
@@ -125,15 +97,27 @@ def main() -> None:
         sys.exit(1)
     translation_field = self_node.getField("translation")
     rotation_field = self_node.getField("rotation")
-    root_children = sup.getRoot().getField("children")
+
+    obstacle = sup.getFromDef(OBSTACLE_DEF)
+    if obstacle is None:
+        print(
+            f"ERROR: DEF {OBSTACLE_DEF} not found in world. Make sure the "
+            f"world file pre-declares `DEF {OBSTACLE_DEF} Solid {{ ... }}`.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    obstacle_translation = obstacle.getField("translation")
 
     source: ProximitySource = (
         MockProximitySource() if args.mock else BleProximitySource()
     )
     source.start()
     print(f"[sup] proximity source: {type(source).__name__}")
+    print(f"[sup] tracking obstacle DEF {OBSTACLE_DEF}")
 
-    obstacle_node = None
+    # Print a state change only when visibility flips, so we don't spam the
+    # console every 32 ms.
+    visible: bool = False
 
     try:
         while sup.step(timestep) != -1:
@@ -142,9 +126,10 @@ def main() -> None:
                 continue
 
             if reading >= TRIGGER_THRESHOLD:
-                if obstacle_node is not None:
-                    obstacle_node.remove()
-                    obstacle_node = None
+                if visible:
+                    obstacle_translation.setSFVec3f(HIDDEN_POSITION)
+                    visible = False
+                    print(f"[sup] obstacle hidden (proximity={reading})")
                 continue
 
             d = scale_proximity_to_meters(reading)
@@ -153,31 +138,14 @@ def main() -> None:
             # The PROTO's local +X axis is "forward" (where the APDS9960 looks).
             fx, fy, _fz = axis_angle_rotate((d, 0.0, 0.0), (ax, ay, az), ang)
             target = [x0 + fx, y0 + fy, OBSTACLE_HEIGHT_M / 2.0]
-
-            if obstacle_node is None:
-                node_string = _build_obstacle_node(target[0], target[1], target[2])
-                before = root_children.getCount()
-                root_children.importMFNodeFromString(-1, node_string)
-                after = root_children.getCount()
-                # `getMFNode(-1)` is more reliable than `getFromDef` for nodes
-                # inserted at runtime: it returns the most recently appended
-                # child directly, without depending on the DEF dictionary.
-                obstacle_node = root_children.getMFNode(-1)
-                if obstacle_node is None or after == before:
-                    print(
-                        f"[sup] WARN: import did not add a node "
-                        f"(children {before} -> {after}). "
-                        f"node_string was:\n{node_string}",
-                        file=sys.stderr,
-                    )
-                else:
-                    print(
-                        f"[sup] spawned obstacle at "
-                        f"({target[0]:.2f}, {target[1]:.2f}, {target[2]:.2f}) "
-                        f"for proximity reading {reading}"
-                    )
-            else:
-                obstacle_node.getField("translation").setSFVec3f(target)
+            obstacle_translation.setSFVec3f(target)
+            if not visible:
+                visible = True
+                print(
+                    f"[sup] obstacle visible at "
+                    f"({target[0]:.2f}, {target[1]:.2f}, {target[2]:.2f}) "
+                    f"d={d:.2f}m (proximity={reading})"
+                )
     finally:
         source.stop()
 

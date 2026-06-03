@@ -1,0 +1,45 @@
+#VRML_SIM R2025a utf8
+
+# Deliberately minimal world. If this fails to load, the problem is the
+# Webots install / session, not anything in the project. If this loads
+# fine but open_field.wbt does not, the problem is something in
+# open_field.wbt or in MobileNano.proto.
+#
+# This world uses ONLY built-in nodes -- no PROTOs, no EXTERNPROTOs, no
+# network fetches. It should be unable to fail at load time.
+
+WorldInfo {
+}
+
+Viewpoint {
+  orientation 0.6029794481062448 -0.624369315668772 -0.49656695702875536 4.140780234108694
+  position -0.1309543781677256 0.29485843075579243 4.377211496329579
+}
+
+Background {
+  skyColor [
+    0.45 0.55 0.70
+  ]
+}
+
+DirectionalLight {
+  ambientIntensity 0.6
+  direction -0.3 -0.4 -1
+  intensity 1.5
+}
+
+Solid {
+  translation 0 0 0.05
+  name "test_box"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.2 0.7 0.3
+        roughness 0.6
+      }
+      geometry Box {
+        size 0.2 0.2 0.1
+      }
+    }
+  ]
+}
