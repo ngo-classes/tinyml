@@ -35,14 +35,18 @@ static const unsigned long SAMPLE_INTERVAL_MS = 20;  // 50 Hz
 static unsigned long lastSample = 0;
 
 void setup() {
-  Serial.begin(9600);
+  /*Serial.begin(9600);
+  
+  while (!Serial) {
+    delay(10); 
+  }*/
 
   if (!IMU.begin()) {
-    Serial.println("Failed to initialize IMU.");
+    //Serial.println("Failed to initialize IMU.");
     while (1) { delay(10); }
   }
   if (!BLE.begin()) {
-    Serial.println("Failed to initialize BLE.");
+    //Serial.println("Failed to initialize BLE.");
     while (1) { delay(10); }
   }
 
@@ -52,7 +56,7 @@ void setup() {
   BLE.addService(imuService);
 
   BLE.advertise();
-  Serial.println("BLE advertising as MovementTwin");
+  //Serial.println("BLE advertising as MovementTwin");
 }
 
 void loop() {
@@ -76,4 +80,5 @@ void loop() {
   packet[5] = (int16_t)(gz * 131.0f);
 
   imuChar.writeValue((uint8_t*)packet, sizeof(packet));
+  //Serial.print("Sent IMU data: ax="); Serial.print(ax, 3);
 }

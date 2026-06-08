@@ -38,6 +38,18 @@ python/programs/webot_movement/
 ## Prerequisites
 
 - Webots R2025a installed.
+- **macOS Bluetooth:** If the controller prints `[ble-imu] scanning...` and Webots
+  reports *"The process crashed some time after starting successfully"*, check
+  **System Settings → Privacy & Security → Bluetooth** and allow both **Webots**
+  and **Python** (the conda interpreter in `runtime.ini`). A native SIGABRT
+  during scan means macOS blocked Bluetooth for the process that launched the
+  controller, not a Python exception.
+- **`MovementTwin` not found:** Serial text `BLE advertising as MovementTwin` only
+  confirms the firmware called `BLE.advertise()` — your Mac still has to *hear*
+  the radio. If another program is already connected, advertising stops; power-cycle
+  the Nano and quit other BLE tools (`collisionDetector`, nRF Connect, etc.).
+  The supervisor matches the name in **advertisement** data (and the IMU service
+  UUID), not the Serial log.
 - Python 3.9+ on `PATH` (or edit `controllers/movement_supervisor/runtime.ini`
   to point at the interpreter you want Webots to use).
 - `pip install bleak` in that same interpreter (only needed for real BLE
