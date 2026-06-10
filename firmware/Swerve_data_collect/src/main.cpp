@@ -24,7 +24,7 @@ void setup() {
 
   Serial.println("Serial ready. Initializing IMU...");
   Serial.println("IMU ready.");
-  Serial.println("Ax");
+  Serial.println("Ax|AvgAx");
 }
 
 void loop() {
@@ -35,13 +35,13 @@ void loop() {
   }
  
   running_sum -= buffer[head];
-  buffer[head] = ax;
-  running_sum += ax;
+  buffer[head] = ax * ax;
+  running_sum += buffer[head];
   head = (head + 1) & BUFFER_MASK;
   average = running_sum / WINDOW_SIZE;
 
-  char line[10];
-  snprintf(line,sizeof(line),"%.3f", average);
+  char line[20];
+  snprintf(line,sizeof(line),"%.3f|%.3f", ax, average);
   Serial.println(line);
   delay(10);
 }
